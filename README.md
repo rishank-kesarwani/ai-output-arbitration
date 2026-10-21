@@ -303,7 +303,7 @@ curl -s -X POST http://localhost:4000/api/v1/policies \
 
 ### Render (Backend)
 - **Repository Root:** `backend/`
-- **Build Command:** `npm install && npm run build`
+- **Build Command:** `npm install --include=dev && npm run build` (or `npm install && npm run build`)
 - **Start Command:** `npm run start:prod`
 - **Health Check Path:** `/health`
 - **Binding Address:** `0.0.0.0`
