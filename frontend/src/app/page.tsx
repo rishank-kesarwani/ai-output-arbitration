@@ -11,6 +11,7 @@ import {
   FileCode,
   ShieldCheck,
   CheckCircle,
+  Scale,
 } from 'lucide-react';
 import { DEFAULT_SCENARIOS, LocalScenario } from '../lib/default-scenarios';
 import { DecisionRecord, ArbitrationStrategyType } from '../lib/types';
@@ -87,7 +88,8 @@ export default function TrustConsolePage() {
       {/* Hero Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-800/80 gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center space-x-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center space-x-2.5">
+            <Scale className="w-7 h-7 text-blue-400 flex-shrink-0" />
             <span>Arbitration Trust Console</span>
             <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
               v1.0.0

@@ -73,8 +73,12 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, document);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('docs', app, document, {
+    customSiteTitle: 'AI Output Arbitration & Trust Layer API Docs',
+  });
+  SwaggerModule.setup('api/docs', app, document, {
+    customSiteTitle: 'AI Output Arbitration & Trust Layer API Docs',
+  });
 
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 4000;
   await app.listen(port, '0.0.0.0');
