@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
@@ -51,6 +52,7 @@ describe('AI Output Arbitration (e2e Routing, Exception, & Boundary Tests)', () 
       const res = await request(app.getHttpServer()).get('/').expect(200);
       expect(res.body.service).toBe('ai-output-arbitration-backend');
       expect(res.body.status).toBe('operational');
+      expect(res.body.publicAccessEnabled).toBe(true);
       expect(res.body.endpoints.health).toBe('/health');
     });
 
@@ -214,6 +216,233 @@ describe('AI Output Arbitration (e2e Routing, Exception, & Boundary Tests)', () 
     it('GET /api/v1/review-queue should return human review queue', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/v1/review-queue')
+        .expect(200);
+
+      expect(Array.isArray(res.body)).toBe(true);
+    });
+  });
+
+  describe('Protected Mutation Authorization (ApiKeyGuard)', () => {
+    let validApiKey: string;
+
+    beforeAll(() => {
+      const config = app.get(ConfigService);
+      validApiKey = config.get<string>('serviceApiKey') || 'test-service-key';
+    });
+
+    it('POST /api/v1/policies should reject mutation without x-api-key with 401', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/v1/policies')
+        .send({
+          policyId: 'unauthorized-policy',
+          name: 'Unauthorized Policy Mutation',
+        })
+        .expect(401);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toMatch(/Invalid or missing x-api-key/i);
+    });
+
+    it('POST /api/v1/policies should reject mutation with invalid x-api-key with 401', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/v1/policies')
+        .set('x-api-key', 'wrong-key-value')
+        .send({
+          policyId: 'unauthorized-policy',
+          name: 'Unauthorized Policy Mutation',
+        })
+        .expect(401);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toMatch(/Invalid or missing x-api-key/i);
+    });
+
+    it('POST /api/v1/policies should allow mutation with valid x-api-key', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/v1/policies')
+        .set('x-api-key', validApiKey)
+        .send({
+          policyId: 'general-qa-v1',
+          name: 'General Q&A Truth Baseline',
+          minConfidenceThreshold: 0.85,
+        })
+        .expect(200);
+
+      expect(res.body.policyId).toBe('general-qa-v1');
+    });
+
+    it('POST /api/v1/review-queue/:id/resolve should reject adjudication without x-api-key with 401', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/v1/review-queue/nonexistent-rev/resolve')
+        .send({
+          action: 'APPROVE',
+          resolutionComment: 'Adjudication without auth',
+        })
+        .expect(401);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toMatch(/Invalid or missing x-api-key/i);
+    });
+
+    it('POST /api/v1/arbitration/benchmark should reject benchmark without x-api-key with 401', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/v1/arbitration/benchmark')
+        .send({
+          candidateModels: ['gpt-4o', 'gemini-1.5-pro'],
+        })
+        .expect(401);
+
+      expect(res.body.success).toBe(false);
+    });
+
+    it('POST /api/v1/arbitration/benchmark should allow benchmark with valid x-api-key', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/v1/arbitration/benchmark')
+        .set('x-api-key', validApiKey)
+        .send({
+          candidateModels: ['gpt-4o', 'gemini-1.5-pro'],
+        })
+        .expect(200);
+
+      expect(res.body).toBeDefined();
+    });
+  });
+
+  describe('Independent Backend Public Access Enforcement (PUBLIC_ACCESS_ENABLED=false)', () => {
+    let restrictedApp: INestApplication;
+    let validApiKey: string;
+
+    beforeAll(async () => {
+      const moduleFixture: TestingModule = await Test.createTestingModule({
+        imports: [AppModule],
+      }).compile();
+
+      const config = moduleFixture.get(ConfigService);
+      validApiKey = config.get<string>('serviceApiKey') || 'test-service-key';
+      const originalGet = config.get.bind(config);
+      jest.spyOn(config, 'get').mockImplementation((key: string, defaultValue?: any) => {
+        if (key === 'publicAccessEnabled') return false;
+        if (key === 'serviceApiKey') return validApiKey;
+        return originalGet(key, defaultValue);
+      });
+
+      restrictedApp = moduleFixture.createNestApplication();
+      restrictedApp.useGlobalPipes(
+        new ValidationPipe({
+          whitelist: true,
+          transform: true,
+          forbidNonWhitelisted: false,
+          transformOptions: { enableImplicitConversion: true },
+        }),
+      );
+      restrictedApp.useGlobalFilters(new AllExceptionsFilter());
+      restrictedApp.useGlobalInterceptors(new LoggingInterceptor());
+      restrictedApp.setGlobalPrefix('api/v1', {
+        exclude: [
+          'health',
+          'health/live',
+          'health/ready',
+          'api/v1/health',
+          'api/v1/health/live',
+          'api/v1/health/ready',
+          '/',
+        ],
+      });
+
+      await restrictedApp.init();
+    });
+
+    afterAll(async () => {
+      await restrictedApp.close();
+    });
+
+    it('GET / should report publicAccessEnabled: false in discovery payload', async () => {
+      const res = await request(restrictedApp.getHttpServer()).get('/').expect(200);
+      expect(res.body.publicAccessEnabled).toBe(false);
+    });
+
+    it('GET /health probe should remain accessible when public access is disabled', async () => {
+      const res = await request(restrictedApp.getHttpServer()).get('/health').expect(200);
+      expect(res.body.status).toBe('UP');
+    });
+
+    it('Direct anonymous POST /api/v1/arbitration/evaluate must be rejected with 401', async () => {
+      const res = await request(restrictedApp.getHttpServer())
+        .post('/api/v1/arbitration/evaluate')
+        .send({
+          task: 'Calculate annual ROI',
+          candidates: [
+            {
+              candidateId: 'cand-a',
+              modelId: 'gpt-4o',
+              output: 'Estimated annual ROI is 14.2%',
+              latencyMs: 300,
+              costUsd: 0.002,
+            },
+          ],
+        })
+        .expect(401);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toMatch(/Public demo access is disabled/i);
+    });
+
+    it('Direct anonymous GET /api/v1/seed/scenarios must be rejected with 401', async () => {
+      const res = await request(restrictedApp.getHttpServer())
+        .get('/api/v1/seed/scenarios')
+        .expect(401);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toMatch(/Public demo access is disabled/i);
+    });
+
+    it('Direct anonymous GET /api/v1/policies must be rejected with 401', async () => {
+      const res = await request(restrictedApp.getHttpServer())
+        .get('/api/v1/policies')
+        .expect(401);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toMatch(/Public demo access is disabled/i);
+    });
+
+    it('Direct anonymous GET /api/v1/review-queue must be rejected with 401', async () => {
+      const res = await request(restrictedApp.getHttpServer())
+        .get('/api/v1/review-queue')
+        .expect(401);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toMatch(/Public demo access is disabled/i);
+    });
+
+    it('Authenticated POST /api/v1/arbitration/evaluate with valid x-api-key should succeed even when public access is disabled', async () => {
+      const res = await request(restrictedApp.getHttpServer())
+        .post('/api/v1/arbitration/evaluate')
+        .set('x-api-key', validApiKey)
+        .set('x-tenant-id', 'test-tenant-e2e')
+        .send({
+          task: 'Calculate annual ROI',
+          policyId: 'general-qa-v1',
+          candidates: [
+            {
+              candidateId: 'cand-a',
+              modelId: 'gpt-4o',
+              output: 'Estimated annual ROI is 14.2% based on conservative market modeling.',
+              latencyMs: 320,
+              costUsd: 0.0025,
+              confidenceScore: 0.93,
+            },
+          ],
+        })
+        .expect(200);
+
+      expect(res.body.decisionId).toBeDefined();
+      expect(res.body.outcome).toBe('SELECTED');
+    });
+
+    it('Authenticated GET /api/v1/seed/scenarios with valid x-api-key should succeed even when public access is disabled', async () => {
+      const res = await request(restrictedApp.getHttpServer())
+        .get('/api/v1/seed/scenarios')
+        .set('x-api-key', validApiKey)
         .expect(200);
 
       expect(Array.isArray(res.body)).toBe(true);

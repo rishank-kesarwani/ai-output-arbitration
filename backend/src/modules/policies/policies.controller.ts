@@ -13,11 +13,12 @@ import { PoliciesService } from './policies.service';
 import { TenantId } from '../../common/decorators';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
+import { PublicAccessGuard } from '../../common/guards/public-access.guard';
 import { ArbitrationPolicy } from '../../common/types';
 
 @ApiTags('Policies')
 @Controller('policies')
-@UseGuards(TenantGuard)
+@UseGuards(TenantGuard, PublicAccessGuard)
 export class PoliciesController {
   constructor(private readonly policiesService: PoliciesService) {}
 

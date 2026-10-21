@@ -13,11 +13,13 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ReviewQueueService, ResolveReviewDto } from './review-queue.service';
 import { TenantId } from '../../common/decorators';
 import { TenantGuard } from '../../common/guards/tenant.guard';
+import { ApiKeyGuard } from '../../common/guards/api-key.guard';
+import { PublicAccessGuard } from '../../common/guards/public-access.guard';
 import { HumanReviewItem } from '../../common/types';
 
 @ApiTags('Human Review Queue')
 @Controller('review-queue')
-@UseGuards(TenantGuard)
+@UseGuards(TenantGuard, PublicAccessGuard)
 export class ReviewQueueController {
   constructor(private readonly reviewQueueService: ReviewQueueService) {}
 
@@ -43,6 +45,7 @@ export class ReviewQueueController {
 
   @Post(':reviewId/resolve')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ApiKeyGuard)
   @ApiOperation({ summary: 'Resolve human review with approval, rejection or override' })
   @ApiResponse({ status: 200, description: 'Resolved review item' })
   async resolveReview(

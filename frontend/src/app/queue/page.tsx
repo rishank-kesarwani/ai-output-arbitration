@@ -299,7 +299,7 @@ export default function ReviewQueuePage() {
                     Resolved as {selectedItem.status} by {selectedItem.reviewerId}
                   </div>
                   <p className="text-slate-300 font-mono text-[11px]">
-                    "{selectedItem.resolutionComment}"
+                    &ldquo;{selectedItem.resolutionComment}&rdquo;
                   </p>
                 </div>
               )}

@@ -1,9 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Root')
 @Controller()
 export class AppController {
+  constructor(private readonly configService: ConfigService) {}
+
   @Get()
   @ApiOperation({ summary: 'Service index and discovery' })
   @ApiResponse({ status: 200, description: 'Service operational summary' })
@@ -13,6 +16,7 @@ export class AppController {
       status: 'operational',
       version: '1.0.0',
       description: 'Evidence-aware AI response arbitration, deterministic validation, citation checking, and human review engine',
+      publicAccessEnabled: this.configService.get<boolean>('publicAccessEnabled', true),
       endpoints: {
         docs: '/docs',
         health: '/health',

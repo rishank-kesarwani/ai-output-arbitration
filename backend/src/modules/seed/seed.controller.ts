@@ -1,9 +1,11 @@
-import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SeedService, PreloadedScenario } from './seed.service';
+import { PublicAccessGuard } from '../../common/guards/public-access.guard';
 
 @ApiTags('Test Scenarios')
 @Controller('seed')
+@UseGuards(PublicAccessGuard)
 export class SeedController {
   constructor(private readonly seedService: SeedService) {}
 

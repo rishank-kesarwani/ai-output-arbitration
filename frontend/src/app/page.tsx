@@ -14,13 +14,14 @@ import {
 } from 'lucide-react';
 import { DEFAULT_SCENARIOS, LocalScenario } from '../lib/default-scenarios';
 import { DecisionRecord, ArbitrationStrategyType } from '../lib/types';
-import { apiClient } from '../lib/api-client';
+import { apiClient, isPublicAccessEnabled } from '../lib/api-client';
 import { StatusBanner } from '../components/StatusBanner';
 import { MetricsBar } from '../components/MetricsBar';
 import { CandidateCard } from '../components/CandidateCard';
 import { EvidenceInspector } from '../components/EvidenceInspector';
 
 export default function TrustConsolePage() {
+  const publicAccess = isPublicAccessEnabled();
   const [scenarios] = useState<LocalScenario[]>(DEFAULT_SCENARIOS);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>(
     DEFAULT_SCENARIOS[0].id,
@@ -38,10 +39,12 @@ export default function TrustConsolePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [rawModalOpen, setRawModalOpen] = useState(false);
 
-  // Automatically execute arbitration on mount with the first scenario
+  // Automatically execute arbitration on mount with the first scenario only if public access is enabled
   useEffect(() => {
-    runArbitration(DEFAULT_SCENARIOS[0]);
-  }, []);
+    if (publicAccess) {
+      runArbitration(DEFAULT_SCENARIOS[0]);
+    }
+  }, [publicAccess]);
 
   const handleSelectScenario = (scenarioId: string) => {
     setSelectedScenarioId(scenarioId);
@@ -49,7 +52,9 @@ export default function TrustConsolePage() {
     if (found) {
       setCurrentScenario(found);
       setSelectedStrategy(found.payload.strategy || 'HYBRID_SAFE');
-      runArbitration(found, found.payload.strategy);
+      if (publicAccess) {
+        runArbitration(found, found.payload.strategy);
+      }
     }
   };
 
@@ -97,14 +102,34 @@ export default function TrustConsolePage() {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => runArbitration(currentScenario)}
-            disabled={isRunning}
+            disabled={isRunning || !publicAccess}
+            title={!publicAccess ? 'Public demo evaluation is disabled in this environment' : undefined}
             className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium text-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/25 transition-all disabled:opacity-50"
           >
             <Play className={`w-4 h-4 ${isRunning ? 'animate-spin' : ''}`} />
-            <span>{isRunning ? 'Evaluating...' : 'Run Arbitration'}</span>
+            <span>
+              {!publicAccess
+                ? 'Public Access Disabled'
+                : isRunning
+                ? 'Evaluating...'
+                : 'Run Arbitration'}
+            </span>
           </button>
         </div>
       </div>
+
+      {/* Public Demo Access Disabled Banner */}
+      {!publicAccess && (
+        <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-sm flex items-start space-x-3">
+          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <span className="font-semibold block">Public Demo Access Disabled</span>
+            <span className="text-xs text-amber-300/90">
+              Public and anonymous evaluation actions are disabled by environment configuration (NEXT_PUBLIC_ACCESS_ENABLED=false). Direct evaluation requests require authenticated credentials (x-api-key).
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Scenario Selector Carousel / Pills */}
       <div className="space-y-2">

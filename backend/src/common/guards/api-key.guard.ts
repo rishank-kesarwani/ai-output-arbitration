@@ -18,19 +18,16 @@ export class ApiKeyGuard implements CanActivate {
 
     const configuredKey = this.configService.get<string>('serviceApiKey');
 
-    // In local development or if no key is configured, allow open testing
-    if (!configuredKey || configuredKey === 'placeholder_arbitration_service_key_here') {
-      return true;
-    }
-
-    if (apiKeyHeader && apiKeyHeader === configuredKey) {
-      return true;
-    }
-
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      if (token === configuredKey) {
+    if (configuredKey) {
+      if (apiKeyHeader && apiKeyHeader === configuredKey) {
         return true;
+      }
+
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        if (token === configuredKey) {
+          return true;
+        }
       }
     }
 

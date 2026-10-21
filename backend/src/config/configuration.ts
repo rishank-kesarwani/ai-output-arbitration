@@ -1,7 +1,22 @@
+function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
+  if (value === undefined || value === null || value === '') {
+    return defaultValue;
+  }
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on') {
+    return true;
+  }
+  if (normalized === 'false' || normalized === '0' || normalized === 'no' || normalized === 'off') {
+    return false;
+  }
+  return defaultValue;
+}
+
 export default () => ({
   nodeEnv: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '4000', 10),
   apiPrefix: process.env.API_PREFIX || 'api/v1',
+  publicAccessEnabled: parseBoolean(process.env.PUBLIC_ACCESS_ENABLED, true),
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   jwtSecret: process.env.JWT_SECRET || 'dev_secret_arbitration_key_32_characters_minimum',
   serviceApiKey: process.env.SERVICE_API_KEY || 'placeholder_arbitration_service_key_here',

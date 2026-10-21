@@ -11,7 +11,10 @@ import {
   Sliders,
   CheckCircle2,
   ExternalLink,
+  Globe,
+  Lock,
 } from 'lucide-react';
+import { isPublicAccessEnabled } from '../lib/api-client';
 
 interface NavbarProps {
   pendingReviewCount?: number;
@@ -83,8 +86,25 @@ export function Navbar({ pendingReviewCount = 0 }: NavbarProps) {
             })}
           </nav>
 
-          {/* System Status Pill */}
+          {/* System Status Pill & Access Mode */}
           <div className="hidden lg:flex items-center space-x-3 text-xs">
+            {isPublicAccessEnabled() ? (
+              <div
+                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-blue-950/60 border border-blue-500/30 text-blue-300"
+                title="Public/demo access enabled via NEXT_PUBLIC_ACCESS_ENABLED"
+              >
+                <Globe className="w-3.5 h-3.5 text-blue-400" />
+                <span className="font-medium">Public Access: Active</span>
+              </div>
+            ) : (
+              <div
+                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-amber-950/60 border border-amber-500/30 text-amber-300"
+                title="Public access disabled via NEXT_PUBLIC_ACCESS_ENABLED"
+              >
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-medium">Public Access: Disabled</span>
+              </div>
+            )}
             <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="font-medium">Cluster: Ready</span>

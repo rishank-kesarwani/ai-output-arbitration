@@ -16,11 +16,13 @@ import { AuditService } from '../audit/audit.service';
 import { ModelRegressionClient } from '../integrations/model-regression.client';
 import { TenantId, WorkspaceId } from '../../common/decorators';
 import { TenantGuard } from '../../common/guards/tenant.guard';
+import { PublicAccessGuard } from '../../common/guards/public-access.guard';
+import { ApiKeyGuard } from '../../common/guards/api-key.guard';
 import { DecisionRecord, AggregateMetrics, ArbitrationOutcome } from '../../common/types';
 
 @ApiTags('Arbitration')
 @Controller('arbitration')
-@UseGuards(TenantGuard)
+@UseGuards(TenantGuard, PublicAccessGuard)
 export class ArbitrationController {
   constructor(
     private readonly arbitrationService: ArbitrationService,
@@ -84,6 +86,7 @@ export class ArbitrationController {
 
   @Post('benchmark')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ApiKeyGuard)
   @ApiOperation({ summary: 'Run benchmark comparison via Model Regression Detection service' })
   async runBenchmark(
     @Body() body: { candidateModels: string[]; arbitrationPolicyId?: string },
