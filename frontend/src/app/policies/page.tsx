@@ -62,18 +62,18 @@ export default function PoliciesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center space-x-2">
-            <Sliders className="w-6 h-6 text-cyan-400" />
+          <h1 className="text-xl sm:text-2xl 4k:text-3xl font-bold text-white tracking-tight flex items-center space-x-2">
+            <Sliders className="w-6 h-6 4k:w-7 4k:h-7 text-cyan-400 flex-shrink-0" />
             <span>Arbitration Policy Rules & Thresholds</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm 4k:text-base text-slate-400 mt-1 max-w-xl leading-relaxed">
             Configure trust thresholds, evidence mandates, phantom citation restrictions, and multi-factor scoring weights.
           </p>
         </div>
 
         {saveSuccess && (
-          <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-950 border border-emerald-500/40 text-emerald-400 text-xs font-semibold">
-            <CheckCircle2 className="w-4 h-4" />
+          <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-950 border border-emerald-500/40 text-emerald-400 text-xs font-semibold self-start sm:self-auto">
+            <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
             <span>Policy Saved (Version Incremented)</span>
           </div>
         )}
@@ -82,29 +82,29 @@ export default function PoliciesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Policy List Sidebar */}
         <div className="space-y-3">
-          <label className="text-xs font-mono uppercase text-slate-400 tracking-wider">
+          <label className="text-xs font-mono uppercase text-slate-400 tracking-wider block">
             Active Tenant Policies
           </label>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-2.5">
             {policies.map((p) => {
               const isSelected = selectedPolicy?.policyId === p.policyId;
               return (
                 <button
                   key={p.policyId}
                   onClick={() => setSelectedPolicy({ ...p })}
-                  className={`w-full text-left p-3.5 rounded-xl border transition-all ${
+                  className={`w-full text-left p-3 sm:p-3.5 rounded-xl border transition-all ${
                     isSelected
                       ? 'bg-blue-950/70 border-blue-500 text-white shadow-md'
                       : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-xs text-white">{p.name}</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+                  <div className="flex items-center justify-between mb-1 gap-2">
+                    <span className="font-semibold text-xs text-white truncate">{p.name}</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 flex-shrink-0">
                       v{p.version}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 line-clamp-2">
+                  <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
                     {p.description}
                   </p>
                 </button>
@@ -115,22 +115,22 @@ export default function PoliciesPage() {
 
         {/* Policy Config Form */}
         {selectedPolicy ? (
-          <div className="lg:col-span-2 glass-panel p-6 rounded-2xl border border-slate-800 space-y-5">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <div>
-                <h3 className="text-base font-bold text-white">
+          <div className="lg:col-span-2 glass-panel p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
+              <div className="min-w-0">
+                <h3 className="text-sm sm:text-base font-bold text-white truncate">
                   {selectedPolicy.name}
                 </h3>
-                <span className="text-xs font-mono text-slate-400">
+                <span className="text-xs font-mono text-slate-400 truncate block mt-0.5">
                   ID: {selectedPolicy.policyId} • Version: {selectedPolicy.version}
                 </span>
               </div>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/30 transition-all disabled:opacity-50"
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/30 transition-all disabled:opacity-50 flex-shrink-0"
               >
-                <Save className="w-3.5 h-3.5" />
+                <Save className="w-3.5 h-3.5 flex-shrink-0" />
                 <span>{saving ? 'Saving...' : 'Save Policy Version'}</span>
               </button>
             </div>
@@ -184,7 +184,7 @@ export default function PoliciesPage() {
                 Grounding & Verification Rules
               </label>
 
-              <label className="flex items-center space-x-2 text-slate-300 cursor-pointer">
+              <label className="flex items-start space-x-2.5 text-slate-300 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedPolicy.requireEvidence}
@@ -194,12 +194,12 @@ export default function PoliciesPage() {
                       requireEvidence: e.target.checked,
                     })
                   }
-                  className="rounded border-slate-700 bg-slate-900 text-blue-600 accent-blue-500"
+                  className="mt-0.5 rounded border-slate-700 bg-slate-900 text-blue-600 accent-blue-500 flex-shrink-0"
                 />
-                <span>Mandate Ground Truth Evidence (Trigger Calibrated Abstention if missing)</span>
+                <span className="leading-snug">Mandate Ground Truth Evidence (Trigger Calibrated Abstention if missing)</span>
               </label>
 
-              <label className="flex items-center space-x-2 text-slate-300 cursor-pointer">
+              <label className="flex items-start space-x-2.5 text-slate-300 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedPolicy.disallowPhantomCitations}
@@ -209,12 +209,12 @@ export default function PoliciesPage() {
                       disallowPhantomCitations: e.target.checked,
                     })
                   }
-                  className="rounded border-slate-700 bg-slate-900 text-blue-600 accent-blue-500"
+                  className="mt-0.5 rounded border-slate-700 bg-slate-900 text-blue-600 accent-blue-500 flex-shrink-0"
                 />
-                <span>Disallow Phantom Citations (Strictly disqualify unresolvable source citations)</span>
+                <span className="leading-snug">Disallow Phantom Citations (Strictly disqualify unresolvable source citations)</span>
               </label>
 
-              <label className="flex items-center space-x-2 text-slate-300 cursor-pointer">
+              <label className="flex items-start space-x-2.5 text-slate-300 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedPolicy.disallowContradictions}
@@ -224,12 +224,12 @@ export default function PoliciesPage() {
                       disallowContradictions: e.target.checked,
                     })
                   }
-                  className="rounded border-slate-700 bg-slate-900 text-blue-600 accent-blue-500"
+                  className="mt-0.5 rounded border-slate-700 bg-slate-900 text-blue-600 accent-blue-500 flex-shrink-0"
                 />
-                <span>Disallow Factual Contradictions (Escalate to review queue on contradiction)</span>
+                <span className="leading-snug">Disallow Factual Contradictions (Escalate to review queue on contradiction)</span>
               </label>
 
-              <label className="flex items-center space-x-2 text-slate-300 cursor-pointer">
+              <label className="flex items-start space-x-2.5 text-slate-300 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedPolicy.strictSchemaValidation}
@@ -239,9 +239,9 @@ export default function PoliciesPage() {
                       strictSchemaValidation: e.target.checked,
                     })
                   }
-                  className="rounded border-slate-700 bg-slate-900 text-blue-600 accent-blue-500"
+                  className="mt-0.5 rounded border-slate-700 bg-slate-900 text-blue-600 accent-blue-500 flex-shrink-0"
                 />
-                <span>Strict JSON Schema Validation (Zero tolerance for malformed syntax)</span>
+                <span className="leading-snug">Strict JSON Schema Validation (Zero tolerance for malformed syntax)</span>
               </label>
             </div>
 
@@ -251,7 +251,7 @@ export default function PoliciesPage() {
                 Multi-Factor Utility Weights
               </label>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <div className="flex justify-between text-slate-400 mb-1">
                     <span>Evidence Support Weight</span>

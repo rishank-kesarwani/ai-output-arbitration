@@ -30,6 +30,11 @@ module.exports = {
           450: '#f43f5e',
         },
       },
+      screens: {
+        'xs': '400px',
+        '3xl': '1920px',
+        '4k': '2560px',
+      },
     },
   },
   plugins: [],

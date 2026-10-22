@@ -71,7 +71,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white flex flex-col justify-between">
         <div className="flex-1">
           <Navbar />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <main className="w-full max-w-7xl 2xl:max-w-[1536px] 3xl:max-w-[1920px] 4k:max-w-[2400px] mx-auto px-3 sm:px-6 lg:px-8 4k:px-12 py-5 sm:py-8 4k:py-12">
             {children}
           </main>
         </div>

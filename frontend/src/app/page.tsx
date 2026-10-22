@@ -45,6 +45,7 @@ export default function TrustConsolePage() {
     if (publicAccess) {
       runArbitration(DEFAULT_SCENARIOS[0]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicAccess]);
 
   const handleSelectScenario = (scenarioId: string) => {
@@ -87,28 +88,28 @@ export default function TrustConsolePage() {
     <div className="space-y-6">
       {/* Hero Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-800/80 gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center space-x-2.5">
-            <Scale className="w-7 h-7 text-blue-400 flex-shrink-0" />
-            <span>Arbitration Trust Console</span>
-            <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl md:text-3xl 4k:text-4xl font-extrabold text-white tracking-tight flex flex-wrap items-center gap-2">
+            <Scale className="w-6 h-6 sm:w-7 sm:h-7 4k:w-9 4k:h-9 text-blue-400 flex-shrink-0" />
+            <span className="truncate">Arbitration Trust Console</span>
+            <span className="text-[10px] sm:text-xs font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
               v1.0.0
             </span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm 4k:text-base text-slate-400 mt-1 max-w-2xl leading-relaxed">
             Multi-candidate response evaluation with deterministic validation, citation checking, and calibrated abstention. Majority agreement is never accepted as proof of ground truth.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 w-full sm:w-auto">
           <button
             onClick={() => runArbitration(currentScenario)}
             disabled={isRunning || !publicAccess}
             title={!publicAccess ? 'Public demo evaluation is disabled in this environment' : undefined}
-            className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium text-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/25 transition-all disabled:opacity-50"
+            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/25 transition-all disabled:opacity-50"
           >
-            <Play className={`w-4 h-4 ${isRunning ? 'animate-spin' : ''}`} />
+            <Play className={`w-4 h-4 flex-shrink-0 ${isRunning ? 'animate-spin' : ''}`} />
             <span>
               {!publicAccess
                 ? 'Public Access Disabled'
@@ -122,11 +123,11 @@ export default function TrustConsolePage() {
 
       {/* Public Demo Access Disabled Banner */}
       {!publicAccess && (
-        <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-sm flex items-start space-x-3">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs sm:text-sm flex items-start space-x-3">
           <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-          <div>
+          <div className="min-w-0 flex-1 leading-relaxed">
             <span className="font-semibold block">Public Demo Access Disabled</span>
-            <span className="text-xs text-amber-300/90">
+            <span className="text-[11px] sm:text-xs text-amber-300/90">
               Public and anonymous evaluation actions are disabled by environment configuration (NEXT_PUBLIC_ACCESS_ENABLED=false). Direct evaluation requests require authenticated credentials (x-api-key).
             </span>
           </div>
@@ -136,26 +137,26 @@ export default function TrustConsolePage() {
       {/* Scenario Selector Carousel / Pills */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+          <label className="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
             <span>Reproducible Evaluation Scenarios</span>
           </label>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-2.5">
           {scenarios.map((sc) => {
             const isSelected = sc.id === selectedScenarioId;
             return (
               <button
                 key={sc.id}
                 onClick={() => handleSelectScenario(sc.id)}
-                className={`text-left p-3 rounded-xl border transition-all ${
+                className={`text-left p-2.5 sm:p-3 rounded-xl border transition-all ${
                   isSelected
                     ? 'bg-blue-950/60 border-blue-500 text-white shadow-md shadow-blue-950/40 ring-1 ring-blue-500/50'
                     : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/40'
                 }`}
               >
-                <div className="text-[10px] font-mono uppercase tracking-wider text-blue-400 mb-1">
+                <div className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-blue-400 mb-0.5 sm:mb-1 truncate">
                   {sc.category}
                 </div>
                 <div className="text-xs font-semibold line-clamp-1">{sc.title}</div>
@@ -166,20 +167,20 @@ export default function TrustConsolePage() {
       </div>
 
       {/* Scenario Context Card */}
-      <div className="p-4 rounded-xl glass-panel border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      <div className="p-3.5 sm:p-4 rounded-xl glass-panel border border-slate-800 flex flex-col md:flex-row md:items-start lg:items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
           <span className="text-xs font-mono text-slate-400">Current Task:</span>
-          <p className="text-sm font-semibold text-slate-200 mt-0.5">
+          <p className="text-xs sm:text-sm font-semibold text-slate-200 mt-0.5 leading-snug">
             {currentScenario.payload.task}
           </p>
-          <p className="text-xs text-slate-400 mt-1 max-w-3xl">
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
             {currentScenario.description}
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 w-full sm:w-auto">
           {/* Strategy Selector */}
-          <div className="text-left">
+          <div className="text-left w-full sm:w-auto">
             <label className="block text-[10px] font-mono text-slate-400 mb-1 uppercase">
               Strategy
             </label>
@@ -190,7 +191,7 @@ export default function TrustConsolePage() {
                 setSelectedStrategy(newStrat);
                 runArbitration(currentScenario, newStrat);
               }}
-              className="text-xs font-mono bg-slate-950 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-500"
+              className="w-full sm:w-auto text-xs font-mono bg-slate-950 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-500"
             >
               <option value="HYBRID_SAFE">HYBRID_SAFE (Recommended)</option>
               <option value="DETERMINISTIC_RULES">DETERMINISTIC_RULES</option>
@@ -203,9 +204,9 @@ export default function TrustConsolePage() {
 
       {/* Error state if backend unreachable */}
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-sm flex items-start space-x-3">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs sm:text-sm flex items-start space-x-3">
           <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
-          <div>
+          <div className="min-w-0 flex-1 leading-relaxed">
             <span className="font-semibold block">Execution Notice</span>
             <span>{errorMessage}</span>
           </div>
@@ -237,24 +238,24 @@ export default function TrustConsolePage() {
 
           {/* Candidate Responses Comparison Matrix */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-white tracking-tight flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <h2 className="text-xs sm:text-sm font-bold text-white tracking-tight flex items-center space-x-2">
                 <span>Candidate Comparison Matrix</span>
-                <span className="text-xs font-mono text-slate-400 font-normal">
+                <span className="text-[11px] sm:text-xs font-mono text-slate-400 font-normal">
                   ({decision.candidates.length} candidates evaluated)
                 </span>
               </h2>
 
               <button
                 onClick={() => setRawModalOpen(true)}
-                className="text-xs font-mono text-blue-400 hover:text-blue-300 flex items-center space-x-1"
+                className="text-xs font-mono text-blue-400 hover:text-blue-300 flex items-center space-x-1 self-start sm:self-auto"
               >
-                <FileCode className="w-3.5 h-3.5" />
+                <FileCode className="w-3.5 h-3.5 flex-shrink-0" />
                 <span>View Full Decision JSON</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 4k:gap-6">
               {decision.candidates.map((cand) => (
                 <CandidateCard
                   key={cand.candidateId}
@@ -278,21 +279,21 @@ export default function TrustConsolePage() {
 
       {/* Raw Decision JSON Modal */}
       {rawModalOpen && decision && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="glass-panel-elevated rounded-2xl max-w-3xl w-full p-6 max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white font-mono">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+          <div className="glass-panel-elevated rounded-2xl w-full max-w-[calc(100vw-1.5rem)] sm:max-w-3xl p-4 sm:p-6 max-h-[88vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 gap-2 min-w-0">
+              <h3 className="text-xs sm:text-sm font-bold text-white font-mono truncate">
                 Decision Record: {decision.decisionId}
               </h3>
               <button
                 onClick={() => setRawModalOpen(false)}
-                className="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800"
+                className="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800 flex-shrink-0"
               >
                 Close
               </button>
             </div>
             <div className="mt-4 flex-1 overflow-y-auto">
-              <pre className="p-4 rounded-xl bg-slate-950 font-mono text-xs text-emerald-400 whitespace-pre-wrap">
+              <pre className="p-3 sm:p-4 rounded-xl bg-slate-950 font-mono text-[11px] sm:text-xs text-emerald-400 whitespace-pre-wrap break-all sm:break-words overflow-x-auto select-text">
                 {JSON.stringify(decision, null, 2)}
               </pre>
             </div>
