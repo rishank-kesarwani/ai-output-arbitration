@@ -318,5 +318,79 @@ curl -s -X POST http://localhost:4000/api/v1/policies \
 - **Environment Variables:**
   - `NEXT_PUBLIC_API_URL`: Set to the complete backend API base URL with prefix (e.g., `https://ai-output-arbitration-backend.onrender.com/api/v1`).
   - `NEXT_PUBLIC_ACCESS_ENABLED`: Set to `true` for public demo mode or `false` to disable demo evaluation UI.
-  - *Trigger a redeployment/rebuild after changing either variable.*
+  - `NEXT_PUBLIC_UNOPTIMIZED_IMAGES`: Set to `true` to immediately bypass Vercel's serverless Image Optimization endpoint (`/_next/image`) during team transformation allowance exhaustion.
+  - *Trigger a redeployment/rebuild after changing these variables.*
+
+---
+
+## 🖼️ Vercel Image Optimization & Performance Strategy
+
+Vercel plans include a quota of **5,000 monthly image transformations** shared across all projects under the team account. Unconstrained usage of `next/image` with default settings generates up to 16 transformation variants per image, re-transforming them every 60 seconds upon cache expiration.
+
+This repository enforces a strict, zero-waste image optimization architecture ensuring fast Core Web Vitals without consuming unnecessary Vercel transformation credits.
+
+### 1. Image Asset Inventory & Delivery Strategy
+
+| Asset Path | Type / Dimensions | Raw Size | WebP Size | Optimization Strategy | Transformations Consumed |
+|---|---|---|---|---|---|
+| `public/icon.svg` | Vector SVG | 2.2 KB | N/A | Static Direct (`unoptimized: true`) | **0** |
+| `public/logo.svg` | Vector SVG | 2.3 KB | N/A | Static Direct (`unoptimized: true`) | **0** |
+| `public/favicon.ico` | Multi-res ICO | 3.6 KB | N/A | Static Metadata Direct | **0** |
+| `public/favicon-16x16.png` | PNG (16x16) | 391 B | 256 B | Static Direct (`unoptimized: true`) | **0** |
+| `public/favicon-32x32.png` | PNG (32x32) | 695 B | 398 B | Static Direct (`unoptimized: true`) | **0** |
+| `public/apple-touch-icon.png` | PNG (180x180) | 2.4 KB | 1.2 KB | Static Direct (`unoptimized: true`) | **0** |
+| `public/icon-192.png` | PNG (192x192) | 2.5 KB | 1.3 KB | Static Direct / Pre-compressed WebP | **0** |
+| `public/icon-512.png` | PNG (512x512) | 5.9 KB | 2.5 KB | Static Direct / Social OpenGraph | **0** |
+| App UI Icons | Lucide React | < 1 KB inline | N/A | Inline SVG JSX (0 HTTP requests) | **0** |
+
+### 2. Next.js Image Configuration (`frontend/next.config.js`)
+
+```javascript
+images: {
+  // Global bypass toggle (active when NEXT_PUBLIC_UNOPTIMIZED_IMAGES=true)
+  unoptimized: process.env.NEXT_PUBLIC_UNOPTIMIZED_IMAGES === 'true',
+
+  // Modern compression formats
+  formats: ['image/avif', 'image/webp'],
+
+  // Pruned from default 8 down to 5 responsive breakpoints matching Tailwind layout:
+  // Eliminates redundant variants (750px, 828px, 1080px, 2048px, 3840px)
+  deviceSizes: [640, 768, 1024, 1280, 1920],
+
+  // Pruned imageSizes for thumbnails and inline cards
+  imageSizes: [16, 32, 48, 64, 96, 128, 256],
+
+  // Cache transformed variants for 1 full year (31,536,000s) on Vercel's edge cache
+  // (Prevents Vercel's default 60-second re-transformation cycle)
+  minimumCacheTTL: 31536000,
+
+  // Prevent SVGs from ever being sent through raster transformation
+  dangerouslyAllowSVG: false,
+}
+```
+
+### 3. Edge CDN Caching Headers
+
+Static assets in `public/` are served with immutable long-term cache headers:
+```
+Cache-Control: public, max-age=31536000, immutable
+```
+This guarantees browsers and edge CDNs cache icons and assets indefinitely, preventing redundant origin re-fetches.
+
+### 4. `<SafeImage>` Component (`frontend/src/components/SafeImage.tsx`)
+
+When adding new raster or photography images, use `<SafeImage>` instead of raw `<Image>` or `<img>`:
+- **Automatic SVG & Thumbnail Bypass:** Automatically detects `.svg` extensions and small dimensions (`width <= 64` or `height <= 64`), marking them `unoptimized: true` to avoid consuming transformation allowance.
+- **Quota Error Recovery:** If Vercel returns HTTP 402 (or an optimization pipeline error), the component automatically falls back to the unoptimized static asset or a specified `fallbackSrc`.
+- **Responsive Layout Stability:** Retains intrinsic aspect ratios, responsive `sizes`, and lazy loading.
+
+### 5. Developer Guide: How to Add New Assets Safely
+
+1. **Icons & UI Glyphs:** Use `lucide-react` inline SVG icons. Never create raster files or route icons through `next/image`.
+2. **Logos & Illustrations:** Prefer SVGs in `public/`. Always mark them `unoptimized: true` or render via `<SafeImage>`.
+3. **Photographs & Screenshots:**
+   - Pre-compress images to WebP/AVIF before committing.
+   - Specify explicit `width`, `height`, and `sizes` (e.g., `sizes="(max-width: 768px) 100vw, 50vw"`).
+   - If the Vercel team quota is exhausted, enable `NEXT_PUBLIC_UNOPTIMIZED_IMAGES=true` in Vercel project environment variables.
+
 
